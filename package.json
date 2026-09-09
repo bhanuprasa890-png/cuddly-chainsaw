@@ -1,0 +1,8 @@
+{
+  "name": "rapidgo-clone",
+  "version": "1.0.0",
+  "description": "Rapido-style ride + parcel booking website with 3D animation",
+  "scripts": {
+    "start": "npx serve -l 8080 ."
+  }
+}
