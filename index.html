@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RapidGo — Bike Taxi, Auto, Cabs & Parcel | Rapido-style Clone</title>
+<meta name="description" content="RapidGo: book bike taxis, autos, cabs and parcel delivery (bike, car, truck) with live fares. Demo clone with 3D animation + Google login demo." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23FFC300'/><text x='50' y='68' font-size='58' text-anchor='middle' font-family='Arial' font-weight='bold'>R</text></svg>" />
+</head>
+<body>
+
+<div id="toast-root" aria-live="polite"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ══════════ TOP STRIP ══════════ -->
+<div class="topbar">
+  <p>🎉 Flat <b>20% OFF</b> your first 3 rides & parcels · Use code <b class="code">GO20</b> · Bike · Auto · Cab · Truck parcel</p>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-inner">
+    <a href="#home" class="brand">
+      <span class="brand-badge">R</span>
+      <span class="brand-name">rapidgo<small>.clone</small></span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#rides">Rides</a>
+      <a href="#parcel">Parcel</a>
+      <a href="#fares">Fares</a>
+      <a href="#demo-accounts">Demo Logins</a>
+      <a href="#google-maps">Google Maps</a>
+      <a href="https://www.google.com" target="_blank" rel="noopener">Google ↗</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" id="myRidesBtn" hidden>🧾 My Rides</button>
+      <button class="btn btn-dark" id="authBtn">Login / Signup</button>
+      <div class="user-chip" id="userChip" hidden>
+        <span class="avatar" id="userAvatar">U</span>
+        <span id="userName">User</span>
+        <div class="user-menu" id="userMenu">
+          <button id="menuRides">🧾 My Rides</button>
+          <button id="menuLogout">⏻ Logout</button>
+        </div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<!-- ══════════ HERO + 3D ══════════ -->
+<section class="hero" id="home">
+  <canvas id="scene3d"></canvas>
+  <div class="hero-shade"></div>
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <div class="pill">🛵 India's favourite way to move · 3D Live</div>
+      <h1>Bharat moves on <span class="hl">RapidGo.</span></h1>
+      <p class="sub">Bike taxis, autos & cabs for people — <b>bikes, cars & trucks</b> for parcels. Transparent per-km fares, live tracking & 1-tap Google login.</p>
+      <div class="hero-cta">
+        <a href="#book" class="btn btn-yellow btn-lg">Book a Ride →</a>
+        <a href="#parcel" class="btn btn-outline-light btn-lg">📦 Send a Parcel</a>
+      </div>
+      <div class="hero-badges">
+        <div><b>4.8★</b><span>12Cr+ ratings</span></div>
+        <div><b>~2 min</b><span>Avg. pickup</span></div>
+        <div><b>120+</b><span>Cities live</span></div>
+      </div>
+      <p class="drag-hint">🖱️ Move your mouse — the 3D city follows you</p>
+    </div>
+
+    <!-- BOOKING CARD -->
+    <div class="book-card tilt" id="book">
+      <div class="book-tabs">
+        <button class="book-tab active" data-tab="ride">🛵 Ride</button>
+        <button class="book-tab" data-tab="parcel">📦 Parcel</button>
+      </div>
+      <label class="fld"><span>📍 Pickup</span><input id="pickup" type="text" placeholder="e.g. Connaught Place, New Delhi" value="Connaught Place, New Delhi" /></label>
+      <button class="swap" id="swapBtn" title="Swap">⇅</button>
+      <label class="fld"><span>🏁 Drop</span><input id="drop" type="text" placeholder="e.g. IGI Airport, New Delhi" value="IGI Airport, New Delhi" /></label>
+      <div class="chips" id="vehicleChips"></div>
+      <div class="dist-row">
+        <label>Distance: <b><span id="distVal">12</span> km</b></label>
+        <button class="link" id="sampleRoute">Use sample route</button>
+      </div>
+      <input type="range" id="distance" min="1" max="120" value="12" />
+      <label class="peak"><input type="checkbox" id="peakToggle" /> Peak-hour pricing (×1.2)</label>
+      <div class="fare-box">
+        <div class="fare-line"><span id="fareVehicle">Bike Taxi</span><span id="fareEta">· ~2 min away</span></div>
+        <div class="fare-line dim"><span>Base + <span id="farePerKm">₹9</span>/km</span><span id="fareBreak">₹20 + ₹108</span></div>
+        <div class="fare-total"><span>Total estimate</span><b id="fareTotal">₹128</b></div>
+      </div>
+      <button class="btn btn-yellow btn-block btn-lg" id="bookNowBtn">Book Now →</button>
+      <button class="link center" id="viewOnMaps">View route on Google Maps ↗</button>
+    </div>
+  </div>
+  <a href="#rides" class="scroll-cue">▼</a>
+</section>
+
+<!-- ══════════ STATS ══════════ -->
+<section class="stats">
+  <div class="container stats-grid">
+    <div><b><span class="counter" data-target="12">0</span>Cr+</b><span>Rides completed</span></div>
+    <div><b><span class="counter" data-target="120">0</span>+</b><span>Cities live</span></div>
+    <div><b><span class="counter" data-target="25">0</span>L+</b><span>Happy captains</span></div>
+    <div><b>4.8★</b><span>Average rating</span></div>
+  </div>
+</section>
+
+<!-- ══════════ RIDES ══════════ -->
+<section class="section" id="rides">
+  <div class="container">
+    <p class="kicker">OUR SERVICES</p>
+    <h2>Rides for every budget 🛵</h2>
+    <p class="muted">Tap a card to select it in the booking widget above.</p>
+    <div class="cards-3" id="rideCards"></div>
+  </div>
+</section>
+
+<!-- ══════════ PARCEL ══════════ -->
+<section class="section alt" id="parcel">
+  <div class="container">
+    <p class="kicker">PARCEL DELIVERY</p>
+    <h2>Send anything — Bike · Car · Truck 📦</h2>
+    <p class="muted">Documents on a bike, furniture in a car, full loads in a truck. Live fares by distance.</p>
+    <div class="parcel-grid">
+      <div class="parcel-vehicles" id="parcelVehicles"></div>
+      <form class="parcel-form tilt" id="parcelForm" onsubmit="return false;">
+        <h3>📦 Book a parcel pickup</h3>
+        <div class="row-2">
+          <label class="fld"><span>Sender name</span><input id="pSender" placeholder="Your name" /></label>
+          <label class="fld"><span>Sender phone</span><input id="pSenderPhone" placeholder="98765 43210" inputmode="numeric" /></label>
+        </div>
+        <div class="row-2">
+          <label class="fld"><span>Receiver name</span><input id="pReceiver" placeholder="Receiver name" /></label>
+          <label class="fld"><span>Receiver phone</span><input id="pReceiverPhone" placeholder="98765 00000" inputmode="numeric" /></label>
+        </div>
+        <label class="fld"><span>📍 Pickup address</span><input id="pPickup" value="Koramangala, Bengaluru" /></label>
+        <label class="fld"><span>🏁 Drop address</span><input id="pDrop" value="Whitefield, Bengaluru" /></label>
+        <div class="row-2">
+          <label class="fld"><span>Package weight</span>
+            <select id="pWeight">
+              <option value="1">Up to 5 kg (documents, food)</option>
+              <option value="1.1">5 – 50 kg (cartons)</option>
+              <option value="1.25">50 – 200 kg (appliances)</option>
+              <option value="1.4">200 kg+ (full load · truck)</option>
+            </select>
+          </label>
+          <label class="fld"><span>Distance (km)</span><input id="pDist" type="number" min="1" max="500" value="14" /></label>
+        </div>
+        <div class="fare-box">
+          <div class="fare-line"><span id="pFareVehicle">Parcel · Bike</span><span id="pFareCap">· Up to 5 kg</span></div>
+          <div class="fare-line dim"><span>Base + per km × weight factor</span><span id="pFareBreak"></span></div>
+          <div class="fare-total"><span>Total estimate</span><b id="pFareTotal">₹0</b></div>
+        </div>
+        <button class="btn btn-dark btn-block btn-lg" id="parcelBookBtn">Book Parcel Pickup →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FARE CALCULATOR ══════════ -->
+<section class="section" id="fares">
+  <div class="container">
+    <p class="kicker">TRANSPARENT PRICING</p>
+    <h2>Fare calculator 💰</h2>
+    <p class="muted">Fair per-km pricing per vehicle. Move the slider and watch the bill update.</p>
+    <div class="calc-grid">
+      <div>
+        <div class="calc-vehicles" id="calcVehicles"></div>
+        <div class="rate-bars" id="rateBars"></div>
+      </div>
+      <div class="calc-bill tilt">
+        <h3>🧾 Your estimate</h3>
+        <div class="dist-row"><label>Distance: <b><span id="cDistVal">10</span> km</b></label></div>
+        <input type="range" id="cDist" min="1" max="150" value="10" />
+        <label class="peak"><input type="checkbox" id="cPeak" /> Peak-hour pricing (×1.2)</label>
+        <div class="bill">
+          <div><span>Base fare</span><b id="cBase">₹0</b></div>
+          <div><span>Distance fare</span><b id="cDistFare">₹0</b></div>
+          <div><span>Peak surcharge</span><b id="cPeakFare">₹0</b></div>
+          <div class="grand"><span>Total</span><b id="cTotal">₹0</b></div>
+        </div>
+        <button class="btn btn-yellow btn-block" id="calcBookBtn">Book this ride →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section class="section alt" id="how">
+  <div class="container">
+    <p class="kicker">HOW IT WORKS</p>
+    <h2>Booked in 30 seconds ⚡</h2>
+    <div class="steps">
+      <div class="step tilt"><span class="n">1</span><h3>Login with Google</h3><p>One tap with a demo Google account — no passwords to remember.</p></div>
+      <div class="step tilt"><span class="n">2</span><h3>Pick a vehicle</h3><p>Bike, auto, cab — or a bike, car or truck for parcels.</p></div>
+      <div class="step tilt"><span class="n">3</span><h3>See upfront fare</h3><p>Base + per-km price shown before you confirm. No surprises.</p></div>
+      <div class="step tilt"><span class="n">4</span><h3>Track & go</h3><p>Get driver details, OTP and live trip progress instantly.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DEMO GOOGLE ACCOUNTS ══════════ -->
+<section class="section" id="demo-accounts">
+  <div class="container">
+    <p class="kicker">AUTH · SIGN IN WITH GOOGLE</p>
+    <h2>Demo Google accounts 🔑</h2>
+    <p class="muted">Click <b>“Continue with Google”</b> anywhere (or any card below) to log in instantly with a demo account. These simulate Google OAuth for this demo — no real Google password is used.</p>
+    <div class="demo-grid" id="demoGrid"></div>
+    <div class="demo-note">🔒 Demo simulation: login state is stored only in your browser (localStorage). To wire real Google OAuth later, add a Google Cloud OAuth Client ID — see <b>README.md</b>.</div>
+  </div>
+</section>
+
+<!-- ══════════ GOOGLE MAPS ══════════ -->
+<section class="section alt" id="google-maps">
+  <div class="container maps-grid">
+    <div>
+      <p class="kicker">POWERED BY GOOGLE</p>
+      <h2>Google access built-in 🗺️</h2>
+      <p class="muted">Preview any pickup / drop on Google Maps, open full Google in one tap, or get turn-by-turn directions.</p>
+      <label class="fld"><span>Search a place</span><input id="mapSearch" value="Connaught Place, New Delhi" /></label>
+      <div class="maps-btns">
+        <button class="btn btn-dark" id="mapGo">🔍 Show on map</button>
+        <a class="btn btn-white" href="https://www.google.com" target="_blank" rel="noopener">G Open Google ↗</a>
+        <a class="btn btn-white" href="https://maps.google.com" target="_blank" rel="noopener">🗺️ Open Google Maps ↗</a>
+        <button class="btn btn-yellow" id="mapDirections">➤ Directions for my trip ↗</button>
+      </div>
+      <ul class="ticks">
+        <li>✅ Live embedded Google Map (no API key needed)</li>
+        <li>✅ 1-tap directions from pickup → drop</li>
+        <li>✅ “Track on Google Maps” on every booking</li>
+      </ul>
+    </div>
+    <div class="map-frame tilt">
+      <iframe id="gmap" title="Google Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Connaught+Place+New+Delhi&output=embed"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ REVIEWS ══════════ -->
+<section class="section" id="reviews">
+  <div class="container">
+    <p class="kicker">LOVED BY INDIA</p>
+    <h2>Riders ❤️ RapidGo</h2>
+    <div class="cards-3">
+      <div class="review tilt"><p>“Bike reached in 2 minutes, fare was exactly as shown. Cheaper than auto for short hops!”</p><b>— Aarav S. · Delhi ★★★★★</b></div>
+      <div class="review tilt"><p>“Sent 40 cartons by mini-truck across the city. Live fare by km, zero haggling.”</p><b>— Priya P. · Bengaluru ★★★★★</b></div>
+      <div class="review tilt"><p>“Google login took one tap and the 3D booking screen is pure 🔥. My daily commute app now.”</p><b>— Rahul V. · Mumbai ★★★★☆</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA ══════════ -->
+<section class="cta">
+  <div class="container cta-inner">
+    <h2>Ready to ride? Your captain is 2 minutes away 🛵</h2>
+    <div class="hero-cta"><a href="#book" class="btn btn-dark btn-lg">Book now</a><a href="#parcel" class="btn btn-outline-dark btn-lg">Send a parcel</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container foot-grid">
+    <div><a href="#home" class="brand"><span class="brand-badge">R</span><span class="brand-name">rapidgo</span></a>
+      <p class="muted">Bike taxis, autos, cabs & parcel delivery. Demo clone built for learning.</p></div>
+    <div><h4>Company</h4><a href="#rides">Rides</a><a href="#parcel">Parcel</a><a href="#fares">Fares</a></div>
+    <div><h4>Access</h4><a href="#demo-accounts">Demo logins</a><a href="#google-maps">Google Maps</a><a href="https://www.google.com" target="_blank" rel="noopener">Google ↗</a></div>
+    <div><h4>Help</h4><a href="#how">How it works</a><a href="#reviews">Reviews</a></div>
+  </div>
+  <p class="copy">© 2026 RapidGo Clone · Not affiliated with Rapido · Demo project — fares & tracking are simulated.</p>
+</footer>
+
+<!-- ══════════ MY RIDES DRAWER ══════════ -->
+<div class="overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="ridesDrawer">
+  <div class="drawer-head"><h3>🧾 My Rides & Parcels</h3><button class="x" id="drawerClose">✕</button></div>
+  <div class="drawer-body" id="ridesList"></div>
+</aside>
+
+<!-- ══════════ AUTH MODAL ══════════ -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="x" data-close="authOverlay">✕</button>
+    <div class="auth-tabs"><button class="active" data-authtab="login">Login</button><button data-authtab="signup">Signup</button></div>
+    <h3 id="authTitle">Welcome back 👋</h3>
+    <button class="btn btn-google btn-block" id="googleBtn"><span class="g">G</span> Continue with Google</button>
+    <div class="divider"><span>or</span></div>
+    <div id="nameRow" hidden><label class="fld"><span>Full name</span><input id="authName" placeholder="Your name" /></label></div>
+    <label class="fld"><span>Email</span><input id="authEmail" type="email" placeholder="you@gmail.com" /></label>
+    <label class="fld"><span>Password</span><input id="authPass" type="password" placeholder="••••••••" /></label>
+    <button class="btn btn-dark btn-block btn-lg" id="authSubmit">Login →</button>
+    <p class="hint">Demo? Use any account below with password <b>demo1234</b> — or just tap <b>Continue with Google</b>.</p>
+  </div>
+</div>
+
+<!-- ══════════ GOOGLE CHOOSER ══════════ -->
+<div class="overlay" id="googleOverlay">
+  <div class="modal gchooser">
+    <button class="x" data-close="googleOverlay">✕</button>
+    <div class="glogo"><span>G</span></div>
+    <h3>Sign in</h3>
+    <p class="muted">Choose an account to continue to <b class="blue">rapidgo.clone</b></p>
+    <div id="chooserList"></div>
+    <button class="link" id="chooserAnother">＋ Use another account (signup)</button>
+    <p class="tiny">To continue, Google will share your name & email with RapidGo.<br/><b>Demo simulation</b> — no real Google OAuth call is made.</p>
+  </div>
+</div>
+
+<!-- ══════════ BOOKING SUCCESS ══════════ -->
+<div class="overlay" id="bookOverlay">
+  <div class="modal">
+    <button class="x" data-close="bookOverlay">✕</button>
+    <div class="success-tick">✓</div>
+    <h3 id="bkTitle">Booking confirmed! 🎉</h3>
+    <div class="bk-card">
+      <div><span>Booking ID</span><b id="bkId">RG-XXXX</b></div>
+      <div><span>Vehicle</span><b id="bkVehicle">Bike Taxi</b></div>
+      <div><span>Route</span><b id="bkRoute">A → B</b></div>
+      <div><span>Fare</span><b id="bkFare">₹0</b></div>
+      <div><span>Captain</span><b id="bkDriver">—</b></div>
+      <div><span>OTP</span><b id="bkOtp" class="otp">0000</b></div>
+    </div>
+    <div class="trip-steps" id="tripSteps">
+      <div class="tstep active"><i></i><span>Finding captain</span></div>
+      <div class="tstep"><i></i><span>Captain arriving</span></div>
+      <div class="tstep"><i></i><span>On trip</span></div>
+      <div class="tstep"><i></i><span>Completed</span></div>
+    </div>
+    <div class="row-2">
+      <button class="btn btn-dark btn-block" id="bkTrack">Track on Google Maps ↗</button>
+      <button class="btn btn-white btn-block" data-close="bookOverlay">Done</button>
+    </div>
+    <button class="link danger" id="bkCancel">Cancel booking</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="scene3d.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
